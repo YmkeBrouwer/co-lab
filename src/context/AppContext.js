@@ -1,31 +1,24 @@
-// State-Verwaltung mit React Context + AsyncStorage, damit meine Daten
-// (Projekte, Connections, mein Profil) auch nach einem Neustart der App
-// noch da sind und nicht jedes Mal auf die Mock-Daten zurückspringen
+// State-Verwaltung mit React Context + AsyncStorage. Neu dazugekommen:
+// myProfile ist jetzt null bis man das Onboarding (Signup + Profil-Setup)
+// durchlaufen hat - RootNavigator schaut sich das an und zeigt je nachdem
+// Onboarding oder die eigentliche App
 import { createContext, useContext, useEffect, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { initialProfiles, initialProjects, initialConnections } from '../data/mockData'
 
 const AppContext = createContext(null)
 
-// unter diesem Key wird alles als ein JSON-Objekt im Speicher vom Handy abgelegt
-const STORAGE_KEY = 'co-lab-app-state'
+// v2 im Namen, damit alte gespeicherte Stände (mit dem Platzhalter-Profil
+// von vorher) nicht aus Versehen als "schon onboarded" durchgehen
+const STORAGE_KEY = 'co-lab-app-state-v2'
 
 export function AppProvider({ children }) {
-  const [profiles] = useState(initialProfiles) // Discover-Liste bleibt fix, muss ich nicht speichern
+  const [profiles] = useState(initialProfiles)
   const [projects, setProjects] = useState(initialProjects)
   const [connections, setConnections] = useState(initialConnections)
-  const [myProfile, setMyProfile] = useState({
-    name: 'Dein Name',
-    city: 'Deine Stadt',
-    bio: 'Erzähl kurz, wofür du stehst.',
-  })
-
-  // true solange wir noch nicht wissen, ob gespeicherte Daten existieren -
-  // verhindert, dass wir kurz die Mock-Daten speichern und die echten
-  // gespeicherten Daten damit überschreiben, bevor sie geladen sind
+  const [myProfile, setMyProfile] = useState(null) // null = Onboarding noch nicht fertig
   const [isLoaded, setIsLoaded] = useState(false)
 
-  // beim allerersten Start der App einmal schauen, ob schon was gespeichert ist
   useEffect(() => {
     const loadSavedState = async () => {
       try {
@@ -45,8 +38,6 @@ export function AppProvider({ children }) {
     loadSavedState()
   }, [])
 
-  // immer wenn sich projects, connections oder myProfile ändern, speichern
-  // wir den neuen Stand - aber erst NACHDEM das initiale Laden fertig ist
   useEffect(() => {
     if (!isLoaded) return
     AsyncStorage.setItem(
@@ -66,8 +57,32 @@ export function AppProvider({ children }) {
     })
   }
 
+  // damit Discover/Projects wissen, ob der "connect"-Button schon
+  // gedrückt wurde und sich entsprechend anders anzeigen kann
+  const isConnectedWith = (name) => connections.some((c) => c.name === name)
+
+  // wird am Ende vom Profil-Setup aufgerufen - sobald myProfile gesetzt ist,
+  // schaltet RootNavigator automatisch von Onboarding auf die Tab-App um
+  const completeOnboarding = (profileData) => {
+    setMyProfile(profileData)
+  }
+
   return (
-    <AppContext.Provider value={{ profiles, projects, addProject, connections, connectWithProfile, myProfile, setMyProfile }}>
+    <AppContext.Provider
+      value={{
+        profiles,
+        projects,
+        addProject,
+        connections,
+        connectWithProfile,
+        isConnectedWith,
+        myProfile,
+        setMyProfile,
+        completeOnboarding,
+        isOnboarded: myProfile !== null,
+        isLoaded,
+      }}
+    >
       {children}
     </AppContext.Provider>
   )

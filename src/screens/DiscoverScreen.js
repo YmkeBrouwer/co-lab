@@ -1,38 +1,46 @@
-// View 1 - Discover, hier sieht man andere Creatives und kann sich connecten
+// View - Discover. Die ganze Karte ist jetzt ein Pressable, das zum
+// Profil-Detail navigiert. Der connect-Button ist ein EIGENES Pressable
+// innerhalb davon - React Native lässt da das innere Element den Tap
+// "gewinnen", man landet beim Draufklicken auf connect also nicht
+// gleichzeitig im Profil-Detail
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useApp } from '../context/AppContext'
 import { colors, radius } from '../theme'
 
-export default function DiscoverScreen() {
-  const { profiles, connectWithProfile } = useApp() // Daten + Funktion aus dem Context holen
+export default function DiscoverScreen({ navigation }) {
+  const { profiles, connectWithProfile, isConnectedWith } = useApp()
 
   return (
     <View style={styles.container}>
       <Text style={styles.wordmark}>colab</Text>
-
-      {/* FlatList statt einfach profiles.map(), weil die laut Doku
-          performanter ist bei langen Listen (rendert nicht alles auf einmal) */}
       <FlatList
         data={profiles}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            {/* hab noch kein echtes Bild-Upload, deshalb erstmal nur Initialen als Avatar */}
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{item.name.split(' ').map((n) => n[0]).join('')}</Text>
-            </View>
-            <View style={styles.cardBody}>
-              <Text style={styles.name}>{item.name}</Text>
-              <Text style={styles.meta}>{item.discipline} · {item.city}</Text>
-              <Text style={styles.bio}>{item.bio}</Text>
-            </View>
-            {/* Pressable = klickbar. löst connectWithProfile aus dem Context aus */}
-            <Pressable style={styles.connectBtn} onPress={() => connectWithProfile(item)}>
-              <Text style={styles.connectBtnText}>connect</Text>
+        renderItem={({ item }) => {
+          const connected = isConnectedWith(item.name)
+          return (
+            <Pressable style={styles.card} onPress={() => navigation.navigate('ProfileDetail', { profile: item })}>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>{item.name.split(' ').map((n) => n[0]).join('')}</Text>
+              </View>
+              <View style={styles.cardBody}>
+                <Text style={styles.name}>{item.name}</Text>
+                <Text style={styles.meta}>{item.discipline} · {item.city}</Text>
+                <Text style={styles.bio} numberOfLines={2}>{item.bio}</Text>
+              </View>
+              <Pressable
+                style={[styles.connectBtn, connected && styles.connectBtnDone]}
+                onPress={() => connectWithProfile(item)}
+                disabled={connected}
+              >
+                <Text style={[styles.connectBtnText, connected && styles.connectBtnTextDone]}>
+                  {connected ? 'verbunden ✓' : 'connect'}
+                </Text>
+              </Pressable>
             </Pressable>
-          </View>
-        )}
+          )
+        }}
       />
     </View>
   )
@@ -50,5 +58,7 @@ const styles = StyleSheet.create({
   meta: { fontSize: 12, color: colors.grey3, textTransform: 'uppercase', letterSpacing: 0.5 },
   bio: { fontSize: 13, color: colors.black, marginTop: 4 },
   connectBtn: { backgroundColor: colors.black, borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 8 },
+  connectBtnDone: { backgroundColor: colors.grey2 },
   connectBtnText: { color: colors.white, fontSize: 12, fontWeight: '600' },
+  connectBtnTextDone: { color: colors.grey3 },
 })

@@ -1,18 +1,20 @@
-// View 2 - Projects, Übersicht der offenen Kolab-Gesuche
-// "navigation" kriegt man automatisch als prop rein, weil der Screen in
-// einem Stack Navigator drin ist (siehe RootNavigator.js)
+// View - Projects, Übersicht der offenen Kolab-Gesuche. War vorher nur eine
+// reine Liste ohne Interaktion - jetzt kann man bei Projekten von anderen
+// Leuten "Interesse zeigen" draufklicken, das verbindet einen mit der Person
+// (genau wie der connect-Button in Discover, nutzt dieselbe Funktion aus
+// dem Context). Bei eigenen Projekten macht das natürlich keinen Sinn,
+// deshalb zeig ich den Button nur bei isMine === false
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
 import { useApp } from '../context/AppContext'
 import { colors, radius } from '../theme'
 
 export default function ProjectsScreen({ navigation }) {
-  const { projects } = useApp()
+  const { projects, myProfile, connectWithProfile, isConnectedWith } = useApp()
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.wordmark}>projects</Text>
-        {/* springt zum NewProject Screen, ist im selben Stack registriert */}
         <Pressable style={styles.addBtn} onPress={() => navigation.navigate('NewProject')}>
           <Text style={styles.addBtnText}>+</Text>
         </Pressable>
@@ -21,14 +23,31 @@ export default function ProjectsScreen({ navigation }) {
         data={projects}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.tag}>{item.discipline}</Text>
-            <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.desc}>{item.description}</Text>
-            <Text style={styles.author}>von {item.author}</Text>
-          </View>
-        )}
+        renderItem={({ item }) => {
+          const isMine = item.author === myProfile.name
+          const connected = isConnectedWith(item.author)
+          return (
+            <View style={styles.card}>
+              <Text style={styles.tag}>{item.discipline}</Text>
+              <Text style={styles.title}>{item.title}</Text>
+              <Text style={styles.desc}>{item.description}</Text>
+              <View style={styles.footer}>
+                <Text style={styles.author}>von {item.author}</Text>
+                {!isMine && (
+                  <Pressable
+                    style={[styles.interestBtn, connected && styles.interestBtnDone]}
+                    onPress={() => connectWithProfile({ name: item.author })}
+                    disabled={connected}
+                  >
+                    <Text style={[styles.interestBtnText, connected && styles.interestBtnTextDone]}>
+                      {connected ? 'verbunden ✓' : 'Interesse zeigen'}
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+            </View>
+          )
+        }}
       />
     </View>
   )
@@ -45,5 +64,10 @@ const styles = StyleSheet.create({
   tag: { alignSelf: 'flex-start', backgroundColor: colors.grey2, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4, fontSize: 11, fontWeight: '600', color: colors.black },
   title: { fontSize: 15, fontWeight: '700', color: colors.black },
   desc: { fontSize: 13, color: colors.black },
+  footer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 },
   author: { fontSize: 11, color: colors.grey3 },
+  interestBtn: { backgroundColor: colors.black, borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 6 },
+  interestBtnDone: { backgroundColor: colors.grey2 },
+  interestBtnText: { color: colors.white, fontSize: 11, fontWeight: '600' },
+  interestBtnTextDone: { color: colors.grey3 },
 })
