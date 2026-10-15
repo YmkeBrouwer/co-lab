@@ -1,13 +1,12 @@
-// View - Discover. Die ganze Karte ist jetzt ein Pressable, das zum
-// Profil-Detail navigiert. Der connect-Button ist ein EIGENES Pressable
-// innerhalb davon - React Native lässt da das innere Element den Tap
-// "gewinnen", man landet beim Draufklicken auf connect also nicht
-// gleichzeitig im Profil-Detail
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
+import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import type { DiscoverStackParamList } from '../navigation/types'
 import { useApp } from '../context/AppContext'
 import { colors, radius } from '../theme'
 
-export default function DiscoverScreen({ navigation }) {
+type Props = NativeStackScreenProps<DiscoverStackParamList, 'DiscoverList'>
+
+export default function DiscoverScreen({ navigation }: Props) {
   const { profiles, connectWithProfile, isConnectedWith } = useApp()
 
   return (
@@ -18,7 +17,7 @@ export default function DiscoverScreen({ navigation }) {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
         renderItem={({ item }) => {
-          const connected = isConnectedWith(item.name)
+          const connected = isConnectedWith(item.id)
           return (
             <Pressable style={styles.card} onPress={() => navigation.navigate('ProfileDetail', { profile: item })}>
               <View style={styles.avatar}>

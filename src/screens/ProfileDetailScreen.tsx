@@ -1,13 +1,15 @@
-// Detailansicht eines fremden Profils, erreichbar durch Antippen einer
-// Karte in Discover. Das profile-Objekt kommt per
-// navigation.navigate('ProfileDetail', { profile: item }) rein und landet
-// hier in route.params. Zeigt zusätzlich die Projekte dieser Person, damit
-// man sieht woran sie gerade arbeitet, bevor man connected
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import type { RouteProp } from '@react-navigation/native'
 import { useApp } from '../context/AppContext'
+import type { Profile } from '../types'
 import { colors, radius } from '../theme'
 
-export default function ProfileDetailScreen({ route }) {
+// wird von ZWEI Stacks benutzt (Discover und Connections), deshalb binde
+// ich die Props hier nicht an einen einzelnen Stack-Typ, sondern halte nur
+// fest: "route.params enthält ein profile"
+type ProfileDetailRoute = RouteProp<{ ProfileDetail: { profile: Profile } }, 'ProfileDetail'>
+
+export default function ProfileDetailScreen({ route }: { route: ProfileDetailRoute }) {
   const { profile } = route.params
   const { projects, connectWithProfile, isConnectedWith } = useApp()
   const connected = isConnectedWith(profile.name)

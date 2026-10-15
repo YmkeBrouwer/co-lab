@@ -1,14 +1,13 @@
-// Detailansicht eines Projekts, erreichbar durch Antippen einer Karte in
-// Projects. route.params.project kommt direkt aus der Liste rein
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native'
 import { useApp } from '../context/AppContext'
+import type { Project } from '../types'
 import { colors, radius } from '../theme'
 
-export default function ProjectDetailScreen({ route }) {
+export default function ProjectDetailScreen({ route }: { route: { params: { project: Project } } }) {
   const { project } = route.params
   const { myProfile, connectWithProfile, isConnectedWith } = useApp()
-  const isMine = project.author === myProfile.name
-  const connected = isConnectedWith(project.author)
+  const isMine = project.authorId === myProfile?.id
+  const connected = isConnectedWith(project.authorId)
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -17,12 +16,10 @@ export default function ProjectDetailScreen({ route }) {
       <Text style={styles.author}>von {project.author}</Text>
       <Text style={styles.desc}>{project.description}</Text>
 
-      {/* bei eigenen Projekten gibt's hier keinen Button, macht ja keinen
-          Sinn sich selbst Interesse zu zeigen */}
       {!isMine && (
         <Pressable
           style={[styles.interestBtn, connected && styles.interestBtnDone]}
-          onPress={() => connectWithProfile({ name: project.author })}
+          onPress={() => connectWithProfile({ id: project.authorId, name: project.author })}
           disabled={connected}
         >
           <Text style={[styles.interestBtnText, connected && styles.interestBtnTextDone]}>

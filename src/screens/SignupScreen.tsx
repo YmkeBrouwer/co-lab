@@ -1,17 +1,32 @@
-// Erster Screen beim App-Start. Kein echtes Backend dahinter - für dieses
-// Projekt reicht es, wenn man einfach E-Mail/Passwort eingibt und weiter
-// zum Profil-Setup kommt. Eine echte Anmeldung wäre ein eigenes Thema für
-// sich (Supabase o.ä.), das sprengt hier den Rahmen
 import { useState } from 'react'
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import type { OnboardingStackParamList } from '../navigation/types'
+import { useApp } from '../context/AppContext'
 import { colors, radius } from '../theme'
 
-export default function SignupScreen({ navigation }) {
+type Props = NativeStackScreenProps<OnboardingStackParamList, 'Signup'>
+
+export default function SignupScreen({ navigation }: Props) {
+  const { signUp } = useApp()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  // simple Validierung, nur dass man nicht mit leeren Feldern weiterkommt
   const canContinue = email.trim().length > 0 && password.trim().length >= 6
+
+  const handleSubmit = async () => {
+    setLoading(true)
+    setError('')
+    const errorMessage = await signUp(email, password)
+    setLoading(false)
+    if (errorMessage) {
+      setError(errorMessage)
+      return
+    }
+    navigation.navigate('ProfileSetup')
+  }
 
   return (
     <View style={styles.container}>
@@ -40,14 +55,14 @@ export default function SignupScreen({ navigation }) {
           onChangeText={setPassword}
         />
 
-        {/* geht einfach zum nächsten Screen im selben Stack (siehe RootNavigator),
-            es wird hier noch nichts im Context gespeichert - das Profil kommt erst danach */}
+        {!!error && <Text style={styles.errorText}>{error}</Text>}
+
         <Pressable
-          style={[styles.submitBtn, !canContinue && styles.submitBtnDisabled]}
-          disabled={!canContinue}
-          onPress={() => navigation.navigate('ProfileSetup')}
+          style={[styles.submitBtn, (!canContinue || loading) && styles.submitBtnDisabled]}
+          disabled={!canContinue || loading}
+          onPress={handleSubmit}
         >
-          <Text style={styles.submitBtnText}>konto erstellen</Text>
+          <Text style={styles.submitBtnText}>{loading ? 'einen moment...' : 'konto erstellen'}</Text>
         </Pressable>
       </View>
     </View>
@@ -62,6 +77,7 @@ const styles = StyleSheet.create({
   form: { gap: 8 },
   label: { fontSize: 12, fontWeight: '600', color: colors.grey3, textTransform: 'uppercase', marginTop: 12, marginBottom: 6 },
   input: { backgroundColor: colors.grey1, borderRadius: radius.md, padding: 15, fontSize: 15, color: colors.black },
+  errorText: { color: '#D23B3B', fontSize: 13, marginTop: 8 },
   submitBtn: { marginTop: 28, backgroundColor: colors.black, borderRadius: radius.pill, padding: 18, alignItems: 'center' },
   submitBtnDisabled: { backgroundColor: colors.grey2 },
   submitBtnText: { color: colors.white, fontWeight: '700', fontSize: 14 },

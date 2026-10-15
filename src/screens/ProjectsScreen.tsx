@@ -1,14 +1,12 @@
-// View - Projects, Übersicht der offenen Kolab-Gesuche. War vorher nur eine
-// reine Liste ohne Interaktion - jetzt kann man bei Projekten von anderen
-// Leuten "Interesse zeigen" draufklicken, das verbindet einen mit der Person
-// (genau wie der connect-Button in Discover, nutzt dieselbe Funktion aus
-// dem Context). Bei eigenen Projekten macht das natürlich keinen Sinn,
-// deshalb zeig ich den Button nur bei isMine === false
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
+import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import type { ProjectsStackParamList } from '../navigation/types'
 import { useApp } from '../context/AppContext'
 import { colors, radius } from '../theme'
 
-export default function ProjectsScreen({ navigation }) {
+type Props = NativeStackScreenProps<ProjectsStackParamList, 'ProjectsList'>
+
+export default function ProjectsScreen({ navigation }: Props) {
   const { projects, myProfile, connectWithProfile, isConnectedWith } = useApp()
 
   return (
@@ -24,19 +22,19 @@ export default function ProjectsScreen({ navigation }) {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
         renderItem={({ item }) => {
-          const isMine = item.author === myProfile.name
-          const connected = isConnectedWith(item.author)
+          const isMine = item.authorId === myProfile?.id
+          const connected = isConnectedWith(item.authorId)
           return (
-            <View style={styles.card}>
+            <Pressable style={styles.card} onPress={() => navigation.navigate('ProjectDetail', { project: item })}>
               <Text style={styles.tag}>{item.discipline}</Text>
               <Text style={styles.title}>{item.title}</Text>
-              <Text style={styles.desc}>{item.description}</Text>
+              <Text style={styles.desc} numberOfLines={2}>{item.description}</Text>
               <View style={styles.footer}>
                 <Text style={styles.author}>von {item.author}</Text>
                 {!isMine && (
                   <Pressable
                     style={[styles.interestBtn, connected && styles.interestBtnDone]}
-                    onPress={() => connectWithProfile({ name: item.author })}
+                    onPress={() => connectWithProfile({ id: item.authorId, name: item.author })}
                     disabled={connected}
                   >
                     <Text style={[styles.interestBtnText, connected && styles.interestBtnTextDone]}>
@@ -45,7 +43,7 @@ export default function ProjectsScreen({ navigation }) {
                   </Pressable>
                 )}
               </View>
-            </View>
+            </Pressable>
           )
         }}
       />

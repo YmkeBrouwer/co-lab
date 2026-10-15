@@ -1,24 +1,29 @@
-// Zweiter Onboarding-Screen, direkt nach Signup. Hier gebe ich die Daten
-// für mein eigenes Profil ein. Sobald ich auf "fertig" tippe, wird
-// completeOnboarding() im Context aufgerufen - das setzt myProfile, und
-// weil RootNavigator darauf achtet ob myProfile null ist oder nicht,
-// springt die App automatisch zur eigentlichen Tab-Ansicht. Kein manueller
-// navigation.navigate() nötig, das übernimmt der Context-State von selbst
 import { useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import { useApp } from '../context/AppContext'
-import { DISCIPLINES } from '../data/mockData'
+import { DISCIPLINES, Discipline } from '../types'
 import { colors, radius } from '../theme'
 
 export default function ProfileSetupScreen() {
   const { completeOnboarding } = useApp()
   const [name, setName] = useState('')
   const [city, setCity] = useState('')
-  const [discipline, setDiscipline] = useState(DISCIPLINES[0])
+  const [discipline, setDiscipline] = useState<Discipline>(DISCIPLINES[0])
   const [bio, setBio] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  // Name und Stadt sollten schon ausgefüllt sein, Bio ist optional
   const canFinish = name.trim().length > 0 && city.trim().length > 0
+
+  const handleFinish = async () => {
+    setLoading(true)
+    setError('')
+    const errorMessage = await completeOnboarding({ name, city, discipline, bio })
+    setLoading(false)
+    if (errorMessage) setError(errorMessage)
+    // kein navigation.navigate nötig - RootNavigator schaltet automatisch
+    // um, sobald myProfile im Context gesetzt ist
+  }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -32,8 +37,6 @@ export default function ProfileSetupScreen() {
       <TextInput style={styles.input} placeholder="Zürich" value={city} onChangeText={setCity} />
 
       <Text style={styles.label}>Disziplin</Text>
-      {/* gleiche Chip-Auswahl wie beim Neues-Projekt-Formular, finde ich
-          konsistenter als für jedes Formular was anderes zu bauen */}
       <View style={styles.chipsRow}>
         {DISCIPLINES.map((d) => (
           <Pressable
@@ -56,12 +59,14 @@ export default function ProfileSetupScreen() {
         numberOfLines={3}
       />
 
+      {!!error && <Text style={styles.errorText}>{error}</Text>}
+
       <Pressable
-        style={[styles.submitBtn, !canFinish && styles.submitBtnDisabled]}
-        disabled={!canFinish}
-        onPress={() => completeOnboarding({ name, city, discipline, bio })}
+        style={[styles.submitBtn, (!canFinish || loading) && styles.submitBtnDisabled]}
+        disabled={!canFinish || loading}
+        onPress={handleFinish}
       >
-        <Text style={styles.submitBtnText}>fertig</Text>
+        <Text style={styles.submitBtnText}>{loading ? 'einen moment...' : 'fertig'}</Text>
       </Pressable>
     </ScrollView>
   )
@@ -80,6 +85,7 @@ const styles = StyleSheet.create({
   chipActive: { backgroundColor: colors.black },
   chipText: { fontSize: 13, color: colors.black },
   chipTextActive: { color: colors.white, fontWeight: '600' },
+  errorText: { color: '#D23B3B', fontSize: 13, marginTop: 8 },
   submitBtn: { marginTop: 28, backgroundColor: colors.black, borderRadius: radius.pill, padding: 18, alignItems: 'center' },
   submitBtnDisabled: { backgroundColor: colors.grey2 },
   submitBtnText: { color: colors.white, fontWeight: '700', fontSize: 14 },

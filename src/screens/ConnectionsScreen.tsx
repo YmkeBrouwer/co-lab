@@ -1,17 +1,33 @@
-// View 4 - Connections, Liste von Leuten mit denen ich schon verbunden bin
-import { FlatList, StyleSheet, Text, View } from 'react-native'
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
+import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import type { ConnectionsStackParamList } from '../navigation/types'
 import { useApp } from '../context/AppContext'
+import { DISCIPLINES } from '../types'
+import type { Connection } from '../types'
 import { colors, radius } from '../theme'
 
-export default function ConnectionsScreen() {
-  const { connections } = useApp()
+type Props = NativeStackScreenProps<ConnectionsStackParamList, 'ConnectionsList'>
+
+export default function ConnectionsScreen({ navigation }: Props) {
+  const { connections, profiles } = useApp()
+
+  const openProfile = (connection: Connection) => {
+    const fullProfile = profiles.find((p) => p.id === connection.profileId)
+    navigation.navigate('ProfileDetail', {
+      profile: fullProfile || {
+        id: connection.profileId,
+        name: connection.name,
+        discipline: DISCIPLINES[0],
+        city: '',
+        bio: '',
+      },
+    })
+  }
 
   return (
     <View style={styles.container}>
       <Text style={styles.wordmark}>connections</Text>
 
-      {/* falls noch keine Connections da sind, zeig ich lieber einen Hinweistext
-          als eine leere weisse Fläche - hab ich so bei den anderen Apps gesehen */}
       {connections.length === 0 ? (
         <Text style={styles.empty}>Noch keine Connections — geh zu Discover und connecte dich mit jemandem.</Text>
       ) : (
@@ -20,7 +36,7 @@ export default function ConnectionsScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           renderItem={({ item }) => (
-            <View style={styles.row}>
+            <Pressable style={styles.row} onPress={() => openProfile(item)}>
               <View style={styles.avatar}>
                 <Text style={styles.avatarText}>{item.name.split(' ').map((n) => n[0]).join('')}</Text>
               </View>
@@ -28,7 +44,7 @@ export default function ConnectionsScreen() {
                 <Text style={styles.name}>{item.name}</Text>
                 <Text style={styles.message} numberOfLines={1}>{item.lastMessage}</Text>
               </View>
-            </View>
+            </Pressable>
           )}
         />
       )}

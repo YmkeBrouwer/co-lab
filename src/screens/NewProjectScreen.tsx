@@ -1,26 +1,33 @@
-// View 3 - Neues Projekt posten, das ist mein Formular-Screen für die Aufgabe
 import { useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import type { ProjectsStackParamList } from '../navigation/types'
 import { useApp } from '../context/AppContext'
-import { DISCIPLINES } from '../data/mockData'
+import { DISCIPLINES, Discipline } from '../types'
 import { colors, radius } from '../theme'
 
-export default function NewProjectScreen({ navigation }) {
-  const { addProject } = useApp()
+type Props = NativeStackScreenProps<ProjectsStackParamList, 'NewProject'>
 
-  // das ist nur der lokale State für die Formularfelder, kommt erst beim
-  // Abschicken in den globalen State (Context) - macht für mich mehr Sinn,
-  // als jeden Tastendruck sofort global zu speichern
+export default function NewProjectScreen({ navigation }: Props) {
+  const { addProject } = useApp()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [discipline, setDiscipline] = useState(DISCIPLINES[0])
+  const [discipline, setDiscipline] = useState<Discipline>(DISCIPLINES[0])
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  // simple Validierung - Button geht erst wenn Titel + Beschreibung da sind
   const canSubmit = title.trim().length > 0 && description.trim().length > 0
 
-  const handleSubmit = () => {
-    addProject({ title, description, discipline })
-    navigation.goBack() // zurück zur Liste, das neue Projekt taucht dann oben auf
+  const handleSubmit = async () => {
+    setLoading(true)
+    setError('')
+    const errorMessage = await addProject({ title, description, discipline })
+    setLoading(false)
+    if (errorMessage) {
+      setError(errorMessage)
+      return
+    }
+    navigation.goBack()
   }
 
   return (
@@ -44,8 +51,6 @@ export default function NewProjectScreen({ navigation }) {
       />
 
       <Text style={styles.label}>Disziplin</Text>
-      {/* hab mich für Chips statt Dropdown entschieden, find ich auf dem Handy
-          angenehmer zu bedienen als ein Picker-Menü */}
       <View style={styles.chipsRow}>
         {DISCIPLINES.map((d) => (
           <Pressable
@@ -58,12 +63,14 @@ export default function NewProjectScreen({ navigation }) {
         ))}
       </View>
 
+      {!!error && <Text style={styles.errorText}>{error}</Text>}
+
       <Pressable
-        style={[styles.submitBtn, !canSubmit && styles.submitBtnDisabled]}
+        style={[styles.submitBtn, (!canSubmit || loading) && styles.submitBtnDisabled]}
         onPress={handleSubmit}
-        disabled={!canSubmit}
+        disabled={!canSubmit || loading}
       >
-        <Text style={styles.submitBtnText}>posten</Text>
+        <Text style={styles.submitBtnText}>{loading ? 'einen moment...' : 'posten'}</Text>
       </Pressable>
     </ScrollView>
   )
@@ -80,6 +87,7 @@ const styles = StyleSheet.create({
   chipActive: { backgroundColor: colors.black },
   chipText: { fontSize: 13, color: colors.black },
   chipTextActive: { color: colors.white, fontWeight: '600' },
+  errorText: { color: '#D23B3B', fontSize: 13 },
   submitBtn: { marginTop: 24, backgroundColor: colors.black, borderRadius: radius.pill, padding: 16, alignItems: 'center' },
   submitBtnDisabled: { backgroundColor: colors.grey2 },
   submitBtnText: { color: colors.white, fontWeight: '700', fontSize: 14 },

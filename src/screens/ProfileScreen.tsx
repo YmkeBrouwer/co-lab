@@ -1,13 +1,19 @@
-// Mein eigenes Profil - jetzt nur noch eine Übersicht. Bearbeiten passiert
-// auf einem eigenen Screen (EditProfile), weil man da gleich ALLE Felder
-// ändern kann (Name, Stadt, Disziplin, Bio) statt wie vorher nur die Bio
 import { Pressable, StyleSheet, Text, View } from 'react-native'
+import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import type { ProfileStackParamList } from '../navigation/types'
 import { useApp } from '../context/AppContext'
 import { colors, radius } from '../theme'
 
-export default function ProfileScreen({ navigation }) {
-  const { myProfile, projects } = useApp()
-  const myProjectCount = projects.filter((p) => p.author === myProfile.name).length
+type Props = NativeStackScreenProps<ProfileStackParamList, 'MyProfile'>
+
+export default function ProfileScreen({ navigation }: Props) {
+  const { myProfile, projects, signOut } = useApp()
+
+  // sollte eigentlich nie null sein, weil dieser Screen nur nach
+  // abgeschlossenem Onboarding erreichbar ist (siehe RootNavigator)
+  if (!myProfile) return null
+
+  const myProjectCount = projects.filter((p) => p.authorId === myProfile.id).length
 
   return (
     <View style={styles.container}>
@@ -32,6 +38,10 @@ export default function ProfileScreen({ navigation }) {
       <Pressable style={styles.editBtn} onPress={() => navigation.navigate('EditProfile')}>
         <Text style={styles.editBtnText}>Profil bearbeiten</Text>
       </Pressable>
+
+      <Pressable style={styles.signOutBtn} onPress={signOut}>
+        <Text style={styles.signOutBtnText}>Abmelden</Text>
+      </Pressable>
     </View>
   )
 }
@@ -51,4 +61,6 @@ const styles = StyleSheet.create({
   bioText: { fontSize: 14, color: colors.black, lineHeight: 21 },
   editBtn: { marginTop: 24, borderRadius: radius.pill, borderWidth: 1.5, borderColor: colors.black, padding: 14, alignItems: 'center' },
   editBtnText: { color: colors.black, fontWeight: '700', fontSize: 13 },
+  signOutBtn: { marginTop: 12, padding: 14, alignItems: 'center' },
+  signOutBtnText: { color: colors.grey3, fontWeight: '600', fontSize: 13 },
 })

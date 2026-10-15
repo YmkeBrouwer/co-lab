@@ -1,23 +1,34 @@
-// Fast derselbe Aufbau wie ProfileSetupScreen beim Onboarding, nur dass die
-// Felder hier schon mit den aktuellen Werten vorausgefüllt sind und am Ende
-// setMyProfile() direkt aufgerufen wird statt completeOnboarding()
 import { useState } from 'react'
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import type { NativeStackScreenProps } from '@react-navigation/native-stack'
+import type { ProfileStackParamList } from '../navigation/types'
 import { useApp } from '../context/AppContext'
-import { DISCIPLINES } from '../data/mockData'
+import { DISCIPLINES, Discipline } from '../types'
 import { colors, radius } from '../theme'
 
-export default function EditProfileScreen({ navigation }) {
-  const { myProfile, setMyProfile } = useApp()
-  const [name, setName] = useState(myProfile.name)
-  const [city, setCity] = useState(myProfile.city)
-  const [discipline, setDiscipline] = useState(myProfile.discipline)
-  const [bio, setBio] = useState(myProfile.bio)
+type Props = NativeStackScreenProps<ProfileStackParamList, 'EditProfile'>
+
+export default function EditProfileScreen({ navigation }: Props) {
+  const { myProfile, updateMyProfile } = useApp()
+
+  const [name, setName] = useState(myProfile?.name ?? '')
+  const [city, setCity] = useState(myProfile?.city ?? '')
+  const [discipline, setDiscipline] = useState<Discipline>(myProfile?.discipline ?? DISCIPLINES[0])
+  const [bio, setBio] = useState(myProfile?.bio ?? '')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const canSave = name.trim().length > 0 && city.trim().length > 0
 
-  const handleSave = () => {
-    setMyProfile({ name, city, discipline, bio })
+  const handleSave = async () => {
+    setLoading(true)
+    setError('')
+    const errorMessage = await updateMyProfile({ name, city, discipline, bio })
+    setLoading(false)
+    if (errorMessage) {
+      setError(errorMessage)
+      return
+    }
     navigation.goBack()
   }
 
@@ -51,8 +62,10 @@ export default function EditProfileScreen({ navigation }) {
         numberOfLines={3}
       />
 
-      <Pressable style={[styles.saveBtn, !canSave && styles.saveBtnDisabled]} disabled={!canSave} onPress={handleSave}>
-        <Text style={styles.saveBtnText}>speichern</Text>
+      {!!error && <Text style={styles.errorText}>{error}</Text>}
+
+      <Pressable style={[styles.saveBtn, (!canSave || loading) && styles.saveBtnDisabled]} disabled={!canSave || loading} onPress={handleSave}>
+        <Text style={styles.saveBtnText}>{loading ? 'einen moment...' : 'speichern'}</Text>
       </Pressable>
     </ScrollView>
   )
@@ -69,6 +82,7 @@ const styles = StyleSheet.create({
   chipActive: { backgroundColor: colors.black },
   chipText: { fontSize: 13, color: colors.black },
   chipTextActive: { color: colors.white, fontWeight: '600' },
+  errorText: { color: '#D23B3B', fontSize: 13 },
   saveBtn: { marginTop: 28, backgroundColor: colors.black, borderRadius: radius.pill, padding: 16, alignItems: 'center' },
   saveBtnDisabled: { backgroundColor: colors.grey2 },
   saveBtnText: { color: colors.white, fontWeight: '700', fontSize: 14 },
