@@ -9,7 +9,7 @@ type Props = NativeStackScreenProps<ProjectsStackParamList, 'ProjectsList'>
 export default function ProjectsScreen({ navigation }: Props) {
   const { projects, myProfile, connectWithProfile, isConnectedWith } = useApp()
 
-  return (
+    return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.wordmark}>projects</Text>
@@ -17,36 +17,40 @@ export default function ProjectsScreen({ navigation }: Props) {
           <Text style={styles.addBtnText}>+</Text>
         </Pressable>
       </View>
-      <FlatList
-        data={projects}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        renderItem={({ item }) => {
-          const isMine = item.authorId === myProfile?.id
-          const connected = isConnectedWith(item.authorId)
-          return (
-            <Pressable style={styles.card} onPress={() => navigation.navigate('ProjectDetail', { project: item })}>
-              <Text style={styles.tag}>{item.discipline}</Text>
-              <Text style={styles.title}>{item.title}</Text>
-              <Text style={styles.desc} numberOfLines={2}>{item.description}</Text>
-              <View style={styles.footer}>
-                <Text style={styles.author}>von {item.author}</Text>
-                {!isMine && (
-                  <Pressable
-                    style={[styles.interestBtn, connected && styles.interestBtnDone]}
-                    onPress={() => connectWithProfile({ id: item.authorId, name: item.author })}
-                    disabled={connected}
-                  >
-                    <Text style={[styles.interestBtnText, connected && styles.interestBtnTextDone]}>
-                      {connected ? 'verbunden ✓' : 'Interesse zeigen'}
-                    </Text>
-                  </Pressable>
-                )}
-              </View>
-            </Pressable>
-          )
-        }}
-      />
+      {projects.length === 0 ? (
+        <Text style={styles.empty}>Noch keine Projekte — sei die/der Erste und poste eins.</Text>
+      ) : (
+        <FlatList
+          data={projects}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          renderItem={({ item }) => {
+            const isMine = item.authorId === myProfile?.id
+            const connected = isConnectedWith(item.authorId)
+            return (
+              <Pressable style={styles.card} onPress={() => navigation.navigate('ProjectDetail', { project: item })}>
+                <Text style={styles.tag}>{item.discipline}</Text>
+                <Text style={styles.title}>{item.title}</Text>
+                <Text style={styles.desc} numberOfLines={2}>{item.description}</Text>
+                <View style={styles.footer}>
+                  <Text style={styles.author}>von {item.author}</Text>
+                  {!isMine && (
+                    <Pressable
+                      style={[styles.interestBtn, connected && styles.interestBtnDone]}
+                      onPress={() => connectWithProfile({ id: item.authorId, name: item.author })}
+                      disabled={connected}
+                    >
+                      <Text style={[styles.interestBtnText, connected && styles.interestBtnTextDone]}>
+                        {connected ? 'verbunden ✓' : 'Interesse zeigen'}
+                      </Text>
+                    </Pressable>
+                  )}
+                </View>
+              </Pressable>
+            )
+          }}
+        />
+      )}
     </View>
   )
 }
@@ -55,6 +59,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.white, paddingTop: 60 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, marginBottom: 12 },
   wordmark: { fontSize: 22, fontWeight: '800', color: colors.black, textTransform: 'uppercase' },
+    empty: { paddingHorizontal: 16, color: colors.grey3, fontSize: 14, lineHeight: 20 },
   addBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.black, alignItems: 'center', justifyContent: 'center' },
   addBtnText: { color: colors.white, fontSize: 18, lineHeight: 18 },
   list: { paddingHorizontal: 16, gap: 12, paddingBottom: 24 },

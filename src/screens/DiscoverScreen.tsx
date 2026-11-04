@@ -9,42 +9,42 @@ type Props = NativeStackScreenProps<DiscoverStackParamList, 'DiscoverList'>
 export default function DiscoverScreen({ navigation }: Props) {
   const { profiles, connectWithProfile, isConnectedWith } = useApp()
 
-  return (
+    return (
     <View style={styles.container}>
       <Text style={styles.wordmark}>colab</Text>
-      <FlatList
-        data={profiles}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        renderItem={({ item }) => {
-          const connected = isConnectedWith(item.id)
-          return (
-            <Pressable style={styles.card} onPress={() => navigation.navigate('ProfileDetail', { profile: item })}>
-              {item.avatarUrl ? (
-                <Image source={{ uri: item.avatarUrl }} style={styles.avatar} />
-              ) : (
+      {profiles.length === 0 ? (
+        <Text style={styles.empty}>Noch keine anderen Creatives da — schau später nochmal vorbei.</Text>
+      ) : (
+        <FlatList
+          data={profiles}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          renderItem={({ item }) => {
+            const connected = isConnectedWith(item.id)
+            return (
+              <Pressable style={styles.card} onPress={() => navigation.navigate('ProfileDetail', { profile: item })}>
                 <View style={styles.avatar}>
                   <Text style={styles.avatarText}>{item.name.split(' ').map((n) => n[0]).join('')}</Text>
                 </View>
-              )}
-              <View style={styles.cardBody}>
-                <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.meta}>{item.discipline} · {item.city}</Text>
-                <Text style={styles.bio} numberOfLines={2}>{item.bio}</Text>
-              </View>
-              <Pressable
-                style={[styles.connectBtn, connected && styles.connectBtnDone]}
-                onPress={() => connectWithProfile(item)}
-                disabled={connected}
-              >
-                <Text style={[styles.connectBtnText, connected && styles.connectBtnTextDone]}>
-                  {connected ? 'verbunden ✓' : 'connect'}
-                </Text>
+                <View style={styles.cardBody}>
+                  <Text style={styles.name}>{item.name}</Text>
+                  <Text style={styles.meta}>{item.discipline} · {item.city}</Text>
+                  <Text style={styles.bio} numberOfLines={2}>{item.bio}</Text>
+                </View>
+                <Pressable
+                  style={[styles.connectBtn, connected && styles.connectBtnDone]}
+                  onPress={() => connectWithProfile(item)}
+                  disabled={connected}
+                >
+                  <Text style={[styles.connectBtnText, connected && styles.connectBtnTextDone]}>
+                    {connected ? 'verbunden ✓' : 'connect'}
+                  </Text>
+                </Pressable>
               </Pressable>
-            </Pressable>
-          )
-        }}
-      />
+            )
+          }}
+        />
+      )}
     </View>
   )
 }
@@ -52,6 +52,7 @@ export default function DiscoverScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.white, paddingTop: 60 },
   wordmark: { fontSize: 22, fontWeight: '800', color: colors.black, paddingHorizontal: 16, marginBottom: 12, textTransform: 'uppercase' },
+  empty: { paddingHorizontal: 16, color: colors.grey3, fontSize: 14, lineHeight: 20 },
   list: { paddingHorizontal: 16, gap: 12, paddingBottom: 24 },
   card: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.grey1, borderRadius: radius.md, padding: 14 },
   avatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.grey2, alignItems: 'center', justifyContent: 'center' },
