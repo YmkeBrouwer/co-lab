@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native'
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import type { ProfileStackParamList } from '../navigation/types'
 import { useApp } from '../context/AppContext'
@@ -9,17 +9,19 @@ type Props = NativeStackScreenProps<ProfileStackParamList, 'MyProfile'>
 export default function ProfileScreen({ navigation }: Props) {
   const { myProfile, projects, signOut } = useApp()
 
-  // sollte eigentlich nie null sein, weil dieser Screen nur nach
-  // abgeschlossenem Onboarding erreichbar ist (siehe RootNavigator)
   if (!myProfile) return null
 
   const myProjectCount = projects.filter((p) => p.authorId === myProfile.id).length
 
   return (
     <View style={styles.container}>
-      <View style={styles.avatar}>
-        <Text style={styles.avatarText}>{myProfile.name.split(' ').map((n) => n[0]).join('')}</Text>
-      </View>
+      {myProfile.avatarUrl ? (
+        <Image source={{ uri: myProfile.avatarUrl }} style={styles.avatar} />
+      ) : (
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>{myProfile.name.split(' ').map((n) => n[0]).join('')}</Text>
+        </View>
+      )}
       <Text style={styles.name}>{myProfile.name}</Text>
       <Text style={styles.city}>{myProfile.discipline} · {myProfile.city}</Text>
 

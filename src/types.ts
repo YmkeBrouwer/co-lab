@@ -7,6 +7,7 @@ export interface Profile {
   discipline: Discipline
   city: string
   bio: string
+  avatarUrl: string | null
 }
 
 export interface Project {

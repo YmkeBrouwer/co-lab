@@ -25,3 +25,12 @@ export type ProfileStackParamList = {
   MyProfile: undefined
   EditProfile: undefined
 }
+
+export interface Profile {
+  id: string
+  name: string
+  discipline: Discipline
+  city: string
+  bio: string
+  avatarUrl: string | null
+}

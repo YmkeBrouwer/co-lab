@@ -1,4 +1,4 @@
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
+import { FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import type { DiscoverStackParamList } from '../navigation/types'
 import { useApp } from '../context/AppContext'
@@ -20,9 +20,13 @@ export default function DiscoverScreen({ navigation }: Props) {
           const connected = isConnectedWith(item.id)
           return (
             <Pressable style={styles.card} onPress={() => navigation.navigate('ProfileDetail', { profile: item })}>
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{item.name.split(' ').map((n) => n[0]).join('')}</Text>
-              </View>
+              {item.avatarUrl ? (
+                <Image source={{ uri: item.avatarUrl }} style={styles.avatar} />
+              ) : (
+                <View style={styles.avatar}>
+                  <Text style={styles.avatarText}>{item.name.split(' ').map((n) => n[0]).join('')}</Text>
+                </View>
+              )}
               <View style={styles.cardBody}>
                 <Text style={styles.name}>{item.name}</Text>
                 <Text style={styles.meta}>{item.discipline} · {item.city}</Text>

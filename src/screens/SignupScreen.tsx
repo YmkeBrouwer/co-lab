@@ -7,8 +7,13 @@ import { colors, radius } from '../theme'
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'Signup'>
 
+type Mode = 'signin' | 'signup'
+
 export default function SignupScreen({ navigation }: Props) {
-  const { signUp } = useApp()
+  const { signUp, signIn } = useApp()
+  // standardmässig "anmelden", weil beim App-Start eher jemand mit
+  // bestehendem Konto reinkommt als jemand komplett Neues
+  const [mode, setMode] = useState<Mode>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -19,13 +24,20 @@ export default function SignupScreen({ navigation }: Props) {
   const handleSubmit = async () => {
     setLoading(true)
     setError('')
-    const errorMessage = await signUp(email, password)
+    const errorMessage = mode === 'signup' ? await signUp(email, password) : await signIn(email, password)
     setLoading(false)
     if (errorMessage) {
       setError(errorMessage)
       return
     }
-    navigation.navigate('ProfileSetup')
+    // bei signup geht's weiter zum Profil-Setup. Bei signin übernimmt
+    // RootNavigator automatisch - Session + vorhandenes Profil -> MainTabs
+    if (mode === 'signup') navigation.navigate('ProfileSetup')
+  }
+
+  const toggleMode = () => {
+    setMode((m) => (m === 'signin' ? 'signup' : 'signin'))
+    setError('')
   }
 
   return (
@@ -62,7 +74,16 @@ export default function SignupScreen({ navigation }: Props) {
           disabled={!canContinue || loading}
           onPress={handleSubmit}
         >
-          <Text style={styles.submitBtnText}>{loading ? 'einen moment...' : 'konto erstellen'}</Text>
+          <Text style={styles.submitBtnText}>
+            {loading ? 'einen moment...' : mode === 'signin' ? 'anmelden' : 'konto erstellen'}
+          </Text>
+        </Pressable>
+
+        <Pressable style={styles.toggleRow} onPress={toggleMode}>
+          <Text style={styles.toggleText}>
+            {mode === 'signin' ? 'Noch kein Konto? ' : 'Schon ein Konto? '}
+            <Text style={styles.toggleTextBold}>{mode === 'signin' ? 'Registrieren' : 'Anmelden'}</Text>
+          </Text>
         </Pressable>
       </View>
     </View>
@@ -81,4 +102,7 @@ const styles = StyleSheet.create({
   submitBtn: { marginTop: 28, backgroundColor: colors.black, borderRadius: radius.pill, padding: 18, alignItems: 'center' },
   submitBtnDisabled: { backgroundColor: colors.grey2 },
   submitBtnText: { color: colors.white, fontWeight: '700', fontSize: 14 },
+  toggleRow: { marginTop: 18, alignItems: 'center' },
+  toggleText: { fontSize: 13, color: colors.grey3 },
+  toggleTextBold: { color: colors.black, fontWeight: '700' },
 })

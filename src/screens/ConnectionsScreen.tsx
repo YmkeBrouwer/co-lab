@@ -20,6 +20,7 @@ export default function ConnectionsScreen({ navigation }: Props) {
         discipline: DISCIPLINES[0],
         city: '',
         bio: '',
+        avatarUrl: null,
       },
     })
   }

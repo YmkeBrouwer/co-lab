@@ -1,16 +1,20 @@
 import { useState } from 'react'
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import * as ImagePicker from 'expo-image-picker'
+import { Feather } from '@expo/vector-icons'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import type { ProfileStackParamList } from '../navigation/types'
 import { useApp } from '../context/AppContext'
+import { uploadAvatar } from '../lib/uploadAvatar'
 import { DISCIPLINES, Discipline } from '../types'
 import { colors, radius } from '../theme'
 
 type Props = NativeStackScreenProps<ProfileStackParamList, 'EditProfile'>
 
 export default function EditProfileScreen({ navigation }: Props) {
-  const { myProfile, updateMyProfile } = useApp()
+  const { myProfile, updateMyProfile, userId } = useApp()
 
+  const [photoUri, setPhotoUri] = useState<string | null>(myProfile?.avatarUrl ?? null)
   const [name, setName] = useState(myProfile?.name ?? '')
   const [city, setCity] = useState(myProfile?.city ?? '')
   const [discipline, setDiscipline] = useState<Discipline>(myProfile?.discipline ?? DISCIPLINES[0])
@@ -20,10 +24,41 @@ export default function EditProfileScreen({ navigation }: Props) {
 
   const canSave = name.trim().length > 0 && city.trim().length > 0
 
+  const handlePickPhoto = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
+    if (status !== 'granted') {
+      setError('Ohne Zugriff auf deine Fotos kein Profilbild möglich.')
+      return
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    })
+    if (!result.canceled && result.assets[0]) {
+      setPhotoUri(result.assets[0].uri)
+    }
+  }
+
   const handleSave = async () => {
     setLoading(true)
     setError('')
-    const errorMessage = await updateMyProfile({ name, city, discipline, bio })
+
+    // nur neu hochladen, wenn sich das Bild wirklich geändert hat
+    let avatarUrl = myProfile?.avatarUrl ?? null
+    if (photoUri && photoUri !== myProfile?.avatarUrl && userId) {
+      try {
+        avatarUrl = await uploadAvatar(userId, photoUri)
+      } catch (e) {
+        console.log('Upload-Fehler:', e)
+        setLoading(false)
+        setError('Foto konnte nicht hochgeladen werden.')
+        return
+      }
+    }
+
+    const errorMessage = await updateMyProfile({ name, city, discipline, bio, avatarUrl })
     setLoading(false)
     if (errorMessage) {
       setError(errorMessage)
@@ -34,6 +69,17 @@ export default function EditProfileScreen({ navigation }: Props) {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Pressable style={styles.photoPicker} onPress={handlePickPhoto}>
+        {photoUri ? (
+          <Image source={{ uri: photoUri }} style={styles.photoPreview} />
+        ) : (
+          <>
+            <Feather name="camera" size={22} color={colors.grey3} />
+            <Text style={styles.photoText}>Profilfoto ändern</Text>
+          </>
+        )}
+      </Pressable>
+
       <Text style={styles.label}>Name</Text>
       <TextInput style={styles.input} value={name} onChangeText={setName} />
 
@@ -74,6 +120,9 @@ export default function EditProfileScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.white },
   content: { padding: 24, gap: 4 },
+  photoPicker: { borderRadius: radius.md, padding: 20, backgroundColor: colors.grey1, alignItems: 'center', justifyContent: 'center', gap: 8, height: 120 },
+  photoPreview: { width: 84, height: 84, borderRadius: 42 },
+  photoText: { fontSize: 13, color: colors.grey3 },
   label: { fontSize: 12, fontWeight: '600', color: colors.grey3, textTransform: 'uppercase', marginTop: 14, marginBottom: 6 },
   input: { backgroundColor: colors.grey1, borderRadius: radius.md, padding: 15, fontSize: 15, color: colors.black },
   multiline: { minHeight: 80, textAlignVertical: 'top' },
