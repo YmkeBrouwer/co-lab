@@ -9,7 +9,7 @@ type ProfileDetailRoute = RouteProp<{ ProfileDetail: { profile: Profile } }, 'Pr
 export default function ProfileDetailScreen({ route }: { route: ProfileDetailRoute }) {
   const { profile } = route.params
   const { projects, connectWithProfile, isConnectedWith } = useApp()
-  const connected = isConnectedWith(profile.name)
+  const connected = isConnectedWith(profile.id)
   const theirProjects = projects.filter((p) => p.author === profile.name)
 
   return (
