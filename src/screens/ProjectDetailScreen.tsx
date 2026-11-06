@@ -8,9 +8,11 @@ type Props = NativeStackScreenProps<ProjectsStackParamList, 'ProjectDetail'>
 
 export default function ProjectDetailScreen({ route }: Props) {
   const { project } = route.params
-  const { myProfile, connectWithProfile, isConnectedWith } = useApp()
+  const { myProfile, connectWithProfile, getConnectionStatus } = useApp()
   const isMine = project.authorId === myProfile?.id
-  const connected = isConnectedWith(project.authorId)
+  const status = getConnectionStatus(project.authorId)
+  const disabled = status !== 'none'
+  const label = status === 'accepted' ? 'verbunden ✓' : status === 'pending-sent' ? 'angefragt...' : status === 'pending-received' ? 'Anfrage erhalten' : 'Interesse zeigen'
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
@@ -21,13 +23,11 @@ export default function ProjectDetailScreen({ route }: Props) {
 
       {!isMine && (
         <Pressable
-          style={[styles.interestBtn, connected && styles.interestBtnDone]}
+          style={[styles.interestBtn, disabled && styles.interestBtnDone]}
           onPress={() => connectWithProfile({ id: project.authorId, name: project.author })}
-          disabled={connected}
+          disabled={disabled}
         >
-          <Text style={[styles.interestBtnText, connected && styles.interestBtnTextDone]}>
-            {connected ? 'verbunden ✓' : 'Interesse zeigen'}
-          </Text>
+          <Text style={[styles.interestBtnText, disabled && styles.interestBtnTextDone]}>{label}</Text>
         </Pressable>
       )}
     </ScrollView>

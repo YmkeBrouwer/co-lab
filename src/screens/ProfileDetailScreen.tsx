@@ -4,15 +4,14 @@ import { useApp } from '../context/AppContext'
 import type { Profile } from '../types'
 import { colors, radius } from '../theme'
 
-// wird von ZWEI Stacks benutzt (Discover und Connections), deshalb binde
-// ich die Props hier nicht an einen einzelnen Stack-Typ, sondern halte nur
-// fest: "route.params enthält ein profile"
 type ProfileDetailRoute = RouteProp<{ ProfileDetail: { profile: Profile } }, 'ProfileDetail'>
 
 export default function ProfileDetailScreen({ route }: { route: ProfileDetailRoute }) {
   const { profile } = route.params
-  const { projects, connectWithProfile, isConnectedWith } = useApp()
-  const connected = isConnectedWith(profile.name)
+  const { projects, connectWithProfile, getConnectionStatus } = useApp()
+  const status = getConnectionStatus(profile.id)
+  const disabled = status !== 'none'
+  const label = status === 'accepted' ? 'verbunden ✓' : status === 'pending-sent' ? 'angefragt...' : status === 'pending-received' ? 'Anfrage erhalten' : 'connect'
   const theirProjects = projects.filter((p) => p.author === profile.name)
 
   return (
@@ -25,13 +24,11 @@ export default function ProfileDetailScreen({ route }: { route: ProfileDetailRou
       <Text style={styles.bio}>{profile.bio}</Text>
 
       <Pressable
-        style={[styles.connectBtn, connected && styles.connectBtnDone]}
+        style={[styles.connectBtn, disabled && styles.connectBtnDone]}
         onPress={() => connectWithProfile(profile)}
-        disabled={connected}
+        disabled={disabled}
       >
-        <Text style={[styles.connectBtnText, connected && styles.connectBtnTextDone]}>
-          {connected ? 'verbunden ✓' : 'connect'}
-        </Text>
+        <Text style={[styles.connectBtnText, disabled && styles.connectBtnTextDone]}>{label}</Text>
       </Pressable>
 
       {theirProjects.length > 0 && (

@@ -1,4 +1,4 @@
-import { FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native'
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import type { DiscoverStackParamList } from '../navigation/types'
 import { useApp } from '../context/AppContext'
@@ -7,9 +7,9 @@ import { colors, radius } from '../theme'
 type Props = NativeStackScreenProps<DiscoverStackParamList, 'DiscoverList'>
 
 export default function DiscoverScreen({ navigation }: Props) {
-  const { profiles, connectWithProfile, isConnectedWith } = useApp()
+  const { profiles, connectWithProfile, getConnectionStatus } = useApp()
 
-    return (
+  return (
     <View style={styles.container}>
       <Text style={styles.wordmark}>colab</Text>
       {profiles.length === 0 ? (
@@ -20,7 +20,9 @@ export default function DiscoverScreen({ navigation }: Props) {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           renderItem={({ item }) => {
-            const connected = isConnectedWith(item.id)
+            const status = getConnectionStatus(item.id)
+            const disabled = status !== 'none'
+            const label = status === 'accepted' ? 'verbunden ✓' : status === 'pending-sent' ? 'angefragt...' : status === 'pending-received' ? 'Anfrage erhalten' : 'connect'
             return (
               <Pressable style={styles.card} onPress={() => navigation.navigate('ProfileDetail', { profile: item })}>
                 <View style={styles.avatar}>
@@ -32,13 +34,11 @@ export default function DiscoverScreen({ navigation }: Props) {
                   <Text style={styles.bio} numberOfLines={2}>{item.bio}</Text>
                 </View>
                 <Pressable
-                  style={[styles.connectBtn, connected && styles.connectBtnDone]}
+                  style={[styles.connectBtn, disabled && styles.connectBtnDone]}
                   onPress={() => connectWithProfile(item)}
-                  disabled={connected}
+                  disabled={disabled}
                 >
-                  <Text style={[styles.connectBtnText, connected && styles.connectBtnTextDone]}>
-                    {connected ? 'verbunden ✓' : 'connect'}
-                  </Text>
+                  <Text style={[styles.connectBtnText, disabled && styles.connectBtnTextDone]}>{label}</Text>
                 </Pressable>
               </Pressable>
             )

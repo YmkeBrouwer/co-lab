@@ -19,13 +19,14 @@ export interface Project {
   author: string
 }
 
+export type ConnectionStatus = 'pending' | 'accepted'
+
 export interface Connection {
   id: string
   profileId: string
   name: string
-  lastMessage: string
+  status: ConnectionStatus
+  direction: 'sent' | 'received'
 }
 
-// MyProfile ist jetzt einfach ein Profile - kommt 1:1 aus der
-// profiles-Tabelle, kein eigenes separates Format mehr nötig
 export type MyProfile = Profile
