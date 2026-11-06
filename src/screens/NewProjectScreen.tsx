@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import type { ProjectsStackParamList } from '../navigation/types'
 import { useApp } from '../context/AppContext'
@@ -30,49 +30,51 @@ export default function NewProjectScreen({ navigation }: Props) {
     navigation.goBack()
   }
 
-  return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.label}>Titel</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="z. B. Cover-Artwork gesucht"
-        value={title}
-        onChangeText={setTitle}
-      />
+    return (
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={styles.label}>Titel</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="z. B. Cover-Artwork gesucht"
+          value={title}
+          onChangeText={setTitle}
+        />
 
-      <Text style={styles.label}>Beschreibung</Text>
-      <TextInput
-        style={[styles.input, styles.multiline]}
-        placeholder="Worum geht's, was suchst du?"
-        value={description}
-        onChangeText={setDescription}
-        multiline
-        numberOfLines={4}
-      />
+        <Text style={styles.label}>Beschreibung</Text>
+        <TextInput
+          style={[styles.input, styles.multiline]}
+          placeholder="Worum geht's, was suchst du?"
+          value={description}
+          onChangeText={setDescription}
+          multiline
+          numberOfLines={4}
+        />
 
-      <Text style={styles.label}>Disziplin</Text>
-      <View style={styles.chipsRow}>
-        {DISCIPLINES.map((d) => (
-          <Pressable
-            key={d}
-            style={[styles.chip, discipline === d && styles.chipActive]}
-            onPress={() => setDiscipline(d)}
-          >
-            <Text style={[styles.chipText, discipline === d && styles.chipTextActive]}>{d}</Text>
-          </Pressable>
-        ))}
-      </View>
+        <Text style={styles.label}>Disziplin</Text>
+        <View style={styles.chipsRow}>
+          {DISCIPLINES.map((d) => (
+            <Pressable
+              key={d}
+              style={[styles.chip, discipline === d && styles.chipActive]}
+              onPress={() => setDiscipline(d)}
+            >
+              <Text style={[styles.chipText, discipline === d && styles.chipTextActive]}>{d}</Text>
+            </Pressable>
+          ))}
+        </View>
 
-      {!!error && <Text style={styles.errorText}>{error}</Text>}
+        {!!error && <Text style={styles.errorText}>{error}</Text>}
 
-      <Pressable
-        style={[styles.submitBtn, (!canSubmit || loading) && styles.submitBtnDisabled]}
-        onPress={handleSubmit}
-        disabled={!canSubmit || loading}
-      >
-        <Text style={styles.submitBtnText}>{loading ? 'einen moment...' : 'posten'}</Text>
-      </Pressable>
-    </ScrollView>
+        <Pressable
+          style={[styles.submitBtn, (!canSubmit || loading) && styles.submitBtnDisabled]}
+          onPress={handleSubmit}
+          disabled={!canSubmit || loading}
+        >
+          <Text style={styles.submitBtnText}>{loading ? 'einen moment...' : 'posten'}</Text>
+        </Pressable>
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
 

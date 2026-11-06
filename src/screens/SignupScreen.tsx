@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
+import { KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import type { OnboardingStackParamList } from '../navigation/types'
 import { useApp } from '../context/AppContext'
@@ -40,8 +40,8 @@ export default function SignupScreen({ navigation }: Props) {
     setError('')
   }
 
-  return (
-    <View style={styles.container}>
+    return (
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <View style={styles.header}>
         <Text style={styles.wordmark}>colab</Text>
         <Text style={styles.subtitle}>for creatives</Text>
@@ -86,7 +86,7 @@ export default function SignupScreen({ navigation }: Props) {
           </Text>
         </Pressable>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   )
 }
 
