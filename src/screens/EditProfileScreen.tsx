@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import * as ImagePicker from 'expo-image-picker'
 import { Feather } from '@expo/vector-icons'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
@@ -68,52 +68,54 @@ export default function EditProfileScreen({ navigation }: Props) {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Pressable style={styles.photoPicker} onPress={handlePickPhoto}>
-        {photoUri ? (
-          <Image source={{ uri: photoUri }} style={styles.photoPreview} />
-        ) : (
-          <>
-            <Feather name="camera" size={22} color={colors.grey3} />
-            <Text style={styles.photoText}>Profilfoto ändern</Text>
-          </>
-        )}
-      </Pressable>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Pressable style={styles.photoPicker} onPress={handlePickPhoto}>
+          {photoUri ? (
+            <Image source={{ uri: photoUri }} style={styles.photoPreview} />
+          ) : (
+            <>
+              <Feather name="camera" size={22} color={colors.grey3} />
+              <Text style={styles.photoText}>Profilfoto ändern</Text>
+            </>
+          )}
+        </Pressable>
 
-      <Text style={styles.label}>Name</Text>
-      <TextInput style={styles.input} value={name} onChangeText={setName} />
+        <Text style={styles.label}>Name</Text>
+        <TextInput style={styles.input} value={name} onChangeText={setName} />
 
-      <Text style={styles.label}>Stadt</Text>
-      <TextInput style={styles.input} value={city} onChangeText={setCity} />
+        <Text style={styles.label}>Stadt</Text>
+        <TextInput style={styles.input} value={city} onChangeText={setCity} />
 
-      <Text style={styles.label}>Disziplin</Text>
-      <View style={styles.chipsRow}>
-        {DISCIPLINES.map((d) => (
-          <Pressable
-            key={d}
-            style={[styles.chip, discipline === d && styles.chipActive]}
-            onPress={() => setDiscipline(d)}
-          >
-            <Text style={[styles.chipText, discipline === d && styles.chipTextActive]}>{d}</Text>
-          </Pressable>
-        ))}
-      </View>
+        <Text style={styles.label}>Disziplin</Text>
+        <View style={styles.chipsRow}>
+          {DISCIPLINES.map((d) => (
+            <Pressable
+              key={d}
+              style={[styles.chip, discipline === d && styles.chipActive]}
+              onPress={() => setDiscipline(d)}
+            >
+              <Text style={[styles.chipText, discipline === d && styles.chipTextActive]}>{d}</Text>
+            </Pressable>
+          ))}
+        </View>
 
-      <Text style={styles.label}>Bio</Text>
-      <TextInput
-        style={[styles.input, styles.multiline]}
-        value={bio}
-        onChangeText={setBio}
-        multiline
-        numberOfLines={3}
-      />
+        <Text style={styles.label}>Bio</Text>
+        <TextInput
+          style={[styles.input, styles.multiline]}
+          value={bio}
+          onChangeText={setBio}
+          multiline
+          numberOfLines={3}
+        />
 
-      {!!error && <Text style={styles.errorText}>{error}</Text>}
+        {!!error && <Text style={styles.errorText}>{error}</Text>}
 
-      <Pressable style={[styles.saveBtn, (!canSave || loading) && styles.saveBtnDisabled]} disabled={!canSave || loading} onPress={handleSave}>
-        <Text style={styles.saveBtnText}>{loading ? 'einen moment...' : 'speichern'}</Text>
-      </Pressable>
-    </ScrollView>
+        <Pressable style={[styles.saveBtn, (!canSave || loading) && styles.saveBtnDisabled]} disabled={!canSave || loading} onPress={handleSave}>
+          <Text style={styles.saveBtnText}>{loading ? 'einen moment...' : 'speichern'}</Text>
+        </Pressable>
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
 

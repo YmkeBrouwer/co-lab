@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
+import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native'
 import * as ImagePicker from 'expo-image-picker'
 import { Feather } from '@expo/vector-icons'
 import { useApp } from '../context/AppContext'
@@ -60,60 +60,62 @@ export default function ProfileSetupScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.title}>Fang mit dir an</Text>
-      <Text style={styles.subtitle}>Dein Profil ist dein erster Eindruck.</Text>
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={styles.title}>Fang mit dir an</Text>
+        <Text style={styles.subtitle}>Dein Profil ist dein erster Eindruck.</Text>
 
-      <Pressable style={styles.photoPicker} onPress={handlePickPhoto}>
-        {photoUri ? (
-          <Image source={{ uri: photoUri }} style={styles.photoPreview} />
-        ) : (
-          <>
-            <Feather name="camera" size={22} color={colors.grey3} />
-            <Text style={styles.photoText}>Profilfoto hinzufügen</Text>
-          </>
-        )}
-      </Pressable>
+        <Pressable style={styles.photoPicker} onPress={handlePickPhoto}>
+          {photoUri ? (
+            <Image source={{ uri: photoUri }} style={styles.photoPreview} />
+          ) : (
+            <>
+              <Feather name="camera" size={22} color={colors.grey3} />
+              <Text style={styles.photoText}>Profilfoto hinzufügen</Text>
+            </>
+          )}
+        </Pressable>
 
-      <Text style={styles.label}>Name</Text>
-      <TextInput style={styles.input} placeholder="Sara Müller" value={name} onChangeText={setName} />
+        <Text style={styles.label}>Name</Text>
+        <TextInput style={styles.input} placeholder="Sara Müller" value={name} onChangeText={setName} />
 
-      <Text style={styles.label}>Stadt</Text>
-      <TextInput style={styles.input} placeholder="Zürich" value={city} onChangeText={setCity} />
+        <Text style={styles.label}>Stadt</Text>
+        <TextInput style={styles.input} placeholder="Zürich" value={city} onChangeText={setCity} />
 
-      <Text style={styles.label}>Disziplin</Text>
-      <View style={styles.chipsRow}>
-        {DISCIPLINES.map((d) => (
-          <Pressable
-            key={d}
-            style={[styles.chip, discipline === d && styles.chipActive]}
-            onPress={() => setDiscipline(d)}
-          >
-            <Text style={[styles.chipText, discipline === d && styles.chipTextActive]}>{d}</Text>
-          </Pressable>
-        ))}
-      </View>
+        <Text style={styles.label}>Disziplin</Text>
+        <View style={styles.chipsRow}>
+          {DISCIPLINES.map((d) => (
+            <Pressable
+              key={d}
+              style={[styles.chip, discipline === d && styles.chipActive]}
+              onPress={() => setDiscipline(d)}
+            >
+              <Text style={[styles.chipText, discipline === d && styles.chipTextActive]}>{d}</Text>
+            </Pressable>
+          ))}
+        </View>
 
-      <Text style={styles.label}>Kurzbio</Text>
-      <TextInput
-        style={[styles.input, styles.multiline]}
-        placeholder="Erzähl kurz, wofür du stehst..."
-        value={bio}
-        onChangeText={setBio}
-        multiline
-        numberOfLines={3}
-      />
+        <Text style={styles.label}>Kurzbio</Text>
+        <TextInput
+          style={[styles.input, styles.multiline]}
+          placeholder="Erzähl kurz, wofür du stehst..."
+          value={bio}
+          onChangeText={setBio}
+          multiline
+          numberOfLines={3}
+        />
 
-      {!!error && <Text style={styles.errorText}>{error}</Text>}
+        {!!error && <Text style={styles.errorText}>{error}</Text>}
 
-      <Pressable
-        style={[styles.submitBtn, (!canFinish || loading) && styles.submitBtnDisabled]}
-        disabled={!canFinish || loading}
-        onPress={handleFinish}
-      >
-        <Text style={styles.submitBtnText}>{loading ? 'einen moment...' : 'fertig'}</Text>
-      </Pressable>
-    </ScrollView>
+        <Pressable
+          style={[styles.submitBtn, (!canFinish || loading) && styles.submitBtnDisabled]}
+          disabled={!canFinish || loading}
+          onPress={handleFinish}
+        >
+          <Text style={styles.submitBtnText}>{loading ? 'einen moment...' : 'fertig'}</Text>
+        </Pressable>
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
 

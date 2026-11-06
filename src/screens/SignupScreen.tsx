@@ -9,6 +9,8 @@ type Props = NativeStackScreenProps<OnboardingStackParamList, 'Signup'>
 
 type Mode = 'signin' | 'signup'
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
 export default function SignupScreen({ navigation }: Props) {
   const { signUp, signIn } = useApp()
   // standardmässig "anmelden", weil beim App-Start eher jemand mit
@@ -19,7 +21,13 @@ export default function SignupScreen({ navigation }: Props) {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const canContinue = email.trim().length > 0 && password.trim().length >= 6
+  // erst anzeigen, wenn im Feld überhaupt was drinsteht - sonst sieht man
+  // beim Öffnen des Screens sofort "ungültig", obwohl man noch gar nichts
+  // eingegeben hat
+  const emailError = email.length > 0 && !EMAIL_REGEX.test(email) ? 'Ungültige E-Mail-Adresse' : ''
+  const passwordError = password.length > 0 && password.length < 6 ? `Noch ${6 - password.length} Zeichen nötig` : ''
+
+  const canContinue = EMAIL_REGEX.test(email) && password.length >= 6
 
   const handleSubmit = async () => {
     setLoading(true)
@@ -40,7 +48,7 @@ export default function SignupScreen({ navigation }: Props) {
     setError('')
   }
 
-    return (
+  return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <View style={styles.header}>
         <Text style={styles.wordmark}>colab</Text>
@@ -57,6 +65,7 @@ export default function SignupScreen({ navigation }: Props) {
           value={email}
           onChangeText={setEmail}
         />
+        {!!emailError && <Text style={styles.fieldError}>{emailError}</Text>}
 
         <Text style={styles.label}>Passwort</Text>
         <TextInput
@@ -66,6 +75,7 @@ export default function SignupScreen({ navigation }: Props) {
           value={password}
           onChangeText={setPassword}
         />
+        {!!passwordError && <Text style={styles.fieldError}>{passwordError}</Text>}
 
         {!!error && <Text style={styles.errorText}>{error}</Text>}
 
@@ -98,6 +108,7 @@ const styles = StyleSheet.create({
   form: { gap: 8 },
   label: { fontSize: 12, fontWeight: '600', color: colors.grey3, textTransform: 'uppercase', marginTop: 12, marginBottom: 6 },
   input: { backgroundColor: colors.grey1, borderRadius: radius.md, padding: 15, fontSize: 15, color: colors.black },
+  fieldError: { color: '#D23B3B', fontSize: 12, marginTop: 6 },
   errorText: { color: '#D23B3B', fontSize: 13, marginTop: 8 },
   submitBtn: { marginTop: 28, backgroundColor: colors.black, borderRadius: radius.pill, padding: 18, alignItems: 'center' },
   submitBtnDisabled: { backgroundColor: colors.grey2 },
