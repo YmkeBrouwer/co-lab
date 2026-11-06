@@ -37,6 +37,7 @@ interface AppContextValue {
   completeOnboarding: (profileData: { name: string; city: string; discipline: Discipline; bio: string; avatarUrl: string | null }) => Promise<string | null>
   updateMyProfile: (profileData: { name: string; city: string; discipline: Discipline; bio: string; avatarUrl: string | null }) => Promise<string | null>
   signOut: () => Promise<void>
+  changePassword: (newPassword: string) => Promise<string | null>
   hasSession: boolean
   isOnboarded: boolean
   isLoaded: boolean
@@ -170,6 +171,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const isConnectedWith = (profileId: string) => connections.some((c) => c.profileId === profileId)
 
+  const changePassword = async (newPassword: string) => {
+  const { error } = await supabase.auth.updateUser({ password: newPassword })
+    return error ? error.message : null
+  }
+
+
   const signOut = async () => {
     await supabase.auth.signOut()
   }
@@ -190,6 +197,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         completeOnboarding,
         updateMyProfile,
         signOut,
+                changePassword,
         hasSession: session !== null,
         isOnboarded: myProfile !== null,
         isLoaded,

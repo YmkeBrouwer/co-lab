@@ -14,6 +14,7 @@ import ProjectDetailScreen from '../screens/ProjectDetailScreen'
 import ConnectionsScreen from '../screens/ConnectionsScreen'
 import ProfileScreen from '../screens/ProfileScreen'
 import EditProfileScreen from '../screens/EditProfileScreen'
+import ChangePasswordScreen from '../screens/ChangePasswordScreen'
 import { colors } from '../theme'
 import {
   OnboardingStackParamList,
@@ -63,6 +64,7 @@ function ProfileStackScreen() {
     <ProfileStack.Navigator screenOptions={{ headerShown: false }}>
       <ProfileStack.Screen name="MyProfile" component={ProfileScreen} />
       <ProfileStack.Screen name="EditProfile" component={EditProfileScreen} options={{ headerShown: true, title: 'Profil bearbeiten' }} />
+      <ProfileStack.Screen name="ChangePassword" component={ChangePasswordScreen} options={{ headerShown: true, title: 'Passwort ändern' }} />
     </ProfileStack.Navigator>
   )
 }
