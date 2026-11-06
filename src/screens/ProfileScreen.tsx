@@ -25,11 +25,11 @@ export default function ProfileScreen({ navigation }: Props) {
       <Text style={styles.name}>{myProfile.name}</Text>
       <Text style={styles.city}>{myProfile.discipline} · {myProfile.city}</Text>
 
-      <View style={styles.statsRow}>
-        <View style={styles.statCell}>
+            <View style={styles.statsRow}>
+        <Pressable style={styles.statCell} onPress={() => navigation.navigate('MyProjects')}>
           <Text style={styles.statNum}>{myProjectCount}</Text>
           <Text style={styles.statLabel}>Projekte</Text>
-        </View>
+        </Pressable>
       </View>
 
       <View style={styles.bioBlock}>

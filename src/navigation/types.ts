@@ -25,4 +25,6 @@ export type ProfileStackParamList = {
   MyProfile: undefined
   EditProfile: undefined
   ChangePassword: undefined
+  MyProjects: undefined
+  ProjectDetail: { project: Project }
 }
