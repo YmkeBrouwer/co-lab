@@ -1,4 +1,4 @@
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
+import { FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import type { ConnectionsStackParamList } from '../navigation/types'
 import { useApp } from '../context/AppContext'
@@ -35,20 +35,27 @@ export default function ConnectionsScreen({ navigation }: Props) {
       {incoming.length > 0 && (
         <View style={styles.requestsBlock}>
           <Text style={styles.sectionLabel}>Anfragen</Text>
-          {incoming.map((item) => (
-            <View key={item.id} style={styles.requestRow}>
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{item.name.split(' ').map((n) => n[0]).join('')}</Text>
+          {incoming.map((item) => {
+            const avatarUrl = profiles.find((p) => p.id === item.profileId)?.avatarUrl
+            return (
+              <View key={item.id} style={styles.requestRow}>
+                {avatarUrl ? (
+                  <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+                ) : (
+                  <View style={styles.avatar}>
+                    <Text style={styles.avatarText}>{item.name.split(' ').map((n) => n[0]).join('')}</Text>
+                  </View>
+                )}
+                <Text style={styles.requestName}>{item.name}</Text>
+                <Pressable style={styles.acceptBtn} onPress={() => respondToConnection(item.id, true)}>
+                  <Text style={styles.acceptBtnText}>Annehmen</Text>
+                </Pressable>
+                <Pressable style={styles.declineBtn} onPress={() => respondToConnection(item.id, false)}>
+                  <Text style={styles.declineBtnText}>Ablehnen</Text>
+                </Pressable>
               </View>
-              <Text style={styles.requestName}>{item.name}</Text>
-              <Pressable style={styles.acceptBtn} onPress={() => respondToConnection(item.id, true)}>
-                <Text style={styles.acceptBtnText}>Annehmen</Text>
-              </Pressable>
-              <Pressable style={styles.declineBtn} onPress={() => respondToConnection(item.id, false)}>
-                <Text style={styles.declineBtnText}>Ablehnen</Text>
-              </Pressable>
-            </View>
-          ))}
+            )
+          })}
         </View>
       )}
 
@@ -59,17 +66,24 @@ export default function ConnectionsScreen({ navigation }: Props) {
           data={accepted}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
-          renderItem={({ item }) => (
-            <Pressable style={styles.row} onPress={() => openProfile(item)}>
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{item.name.split(' ').map((n) => n[0]).join('')}</Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.message}>Verbunden</Text>
-              </View>
-            </Pressable>
-          )}
+          renderItem={({ item }) => {
+            const avatarUrl = profiles.find((p) => p.id === item.profileId)?.avatarUrl
+            return (
+              <Pressable style={styles.row} onPress={() => openProfile(item)}>
+                {avatarUrl ? (
+                  <Image source={{ uri: avatarUrl }} style={styles.avatar} />
+                ) : (
+                  <View style={styles.avatar}>
+                    <Text style={styles.avatarText}>{item.name.split(' ').map((n) => n[0]).join('')}</Text>
+                  </View>
+                )}
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.name}>{item.name}</Text>
+                  <Text style={styles.message}>Verbunden</Text>
+                </View>
+              </Pressable>
+            )
+          }}
         />
       )}
     </View>

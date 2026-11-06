@@ -1,4 +1,4 @@
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native'
+import { FlatList, Image, Pressable, StyleSheet, Text, View } from 'react-native'
 import type { NativeStackScreenProps } from '@react-navigation/native-stack'
 import type { DiscoverStackParamList } from '../navigation/types'
 import { useApp } from '../context/AppContext'
@@ -9,25 +9,33 @@ type Props = NativeStackScreenProps<DiscoverStackParamList, 'DiscoverList'>
 export default function DiscoverScreen({ navigation }: Props) {
   const { profiles, connectWithProfile, getConnectionStatus } = useApp()
 
+  // wer schon verbunden ist, gehört in den Connections-Tab, nicht mehr
+  // nach Discover - sonst sieht man die gleiche Person doppelt
+  const visibleProfiles = profiles.filter((p) => getConnectionStatus(p.id) !== 'accepted')
+
   return (
     <View style={styles.container}>
       <Text style={styles.wordmark}>colab</Text>
-      {profiles.length === 0 ? (
+      {visibleProfiles.length === 0 ? (
         <Text style={styles.empty}>Noch keine anderen Creatives da — schau später nochmal vorbei.</Text>
       ) : (
         <FlatList
-          data={profiles}
+          data={visibleProfiles}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           renderItem={({ item }) => {
             const status = getConnectionStatus(item.id)
             const disabled = status !== 'none'
-            const label = status === 'accepted' ? 'verbunden ✓' : status === 'pending-sent' ? 'angefragt...' : status === 'pending-received' ? 'Anfrage erhalten' : 'connect'
+            const label = status === 'pending-sent' ? 'angefragt...' : status === 'pending-received' ? 'Anfrage erhalten' : 'connect'
             return (
               <Pressable style={styles.card} onPress={() => navigation.navigate('ProfileDetail', { profile: item })}>
-                <View style={styles.avatar}>
-                  <Text style={styles.avatarText}>{item.name.split(' ').map((n) => n[0]).join('')}</Text>
-                </View>
+                {item.avatarUrl ? (
+                  <Image source={{ uri: item.avatarUrl }} style={styles.avatar} />
+                ) : (
+                  <View style={styles.avatar}>
+                    <Text style={styles.avatarText}>{item.name.split(' ').map((n) => n[0]).join('')}</Text>
+                  </View>
+                )}
                 <View style={styles.cardBody}>
                   <Text style={styles.name}>{item.name}</Text>
                   <Text style={styles.meta}>{item.discipline} · {item.city}</Text>
