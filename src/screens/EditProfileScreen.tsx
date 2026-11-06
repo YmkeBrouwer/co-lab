@@ -114,6 +114,10 @@ export default function EditProfileScreen({ navigation }: Props) {
         <Pressable style={[styles.saveBtn, (!canSave || loading) && styles.saveBtnDisabled]} disabled={!canSave || loading} onPress={handleSave}>
           <Text style={styles.saveBtnText}>{loading ? 'einen moment...' : 'speichern'}</Text>
         </Pressable>
+
+        <Pressable style={styles.changePasswordBtn} onPress={() => navigation.navigate('ChangePassword')}>
+          <Text style={styles.changePasswordBtnText}>Passwort ändern</Text>
+        </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
   )
@@ -137,4 +141,6 @@ const styles = StyleSheet.create({
   saveBtn: { marginTop: 28, backgroundColor: colors.black, borderRadius: radius.pill, padding: 16, alignItems: 'center' },
   saveBtnDisabled: { backgroundColor: colors.grey2 },
   saveBtnText: { color: colors.white, fontWeight: '700', fontSize: 14 },
+  changePasswordBtn: { marginTop: 16, padding: 12, alignItems: 'center' },
+  changePasswordBtnText: { color: '#D23B3B', fontWeight: '600', fontSize: 13 },
 })

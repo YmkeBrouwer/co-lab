@@ -41,10 +41,6 @@ export default function ProfileScreen({ navigation }: Props) {
         <Text style={styles.editBtnText}>Profil bearbeiten</Text>
       </Pressable>
 
-      <Pressable style={styles.changePasswordBtn} onPress={() => navigation.navigate('ChangePassword')}>
-        <Text style={styles.changePasswordBtnText}>Passwort ändern</Text>
-      </Pressable>
-
       <Pressable style={styles.signOutBtn} onPress={signOut}>
         <Text style={styles.signOutBtnText}>Abmelden</Text>
       </Pressable>
@@ -67,8 +63,6 @@ const styles = StyleSheet.create({
   bioText: { fontSize: 14, color: colors.black, lineHeight: 21 },
   editBtn: { marginTop: 24, borderRadius: radius.pill, borderWidth: 1.5, borderColor: colors.black, padding: 14, alignItems: 'center' },
   editBtnText: { color: colors.black, fontWeight: '700', fontSize: 13 },
-  changePasswordBtn: { marginTop: 10, padding: 12, alignItems: 'center' },
-  changePasswordBtnText: { color: colors.black, fontWeight: '600', fontSize: 13 },
   signOutBtn: { marginTop: 12, padding: 14, alignItems: 'center' },
   signOutBtnText: { color: colors.grey3, fontWeight: '600', fontSize: 13 },
 })
